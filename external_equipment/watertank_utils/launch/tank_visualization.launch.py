@@ -2,7 +2,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -34,12 +34,19 @@ def generate_launch_description():
 
     # Bluerov model for visualization
 
-    # robot_name = LaunchConfiguration('brov_name')
-    robot_name = "bluerov_saab"
+    robot_name = LaunchConfiguration('brov_name')
+    #robot_name = "bluerov_saab"
     brov_package_dir = FindPackageShare(LaunchConfiguration('brov_package'))
     brov_path = PathJoinSubstitution([brov_package_dir, LaunchConfiguration('brov_package_path')])
 
-    robot_description_content = ParameterValue(Command(['xacro ', brov_path, ' ', f'robot_name:={robot_name}']), value_type=str)
+    #robot_description_content = ParameterValue(Command(['xacro ', brov_path, ' ', f'robot_name:={robot_name}']), value_type=str)
+    xacro_command = Command([
+        'xacro ', brov_path,
+        ' ',
+        TextSubstitution(text='robot_name:='), robot_name
+    ])
+    robot_description_content = ParameterValue(xacro_command, value_type=str)
+
 
     robot_state_publisher_node_1 = Node(package='robot_state_publisher',
                                       executable='robot_state_publisher',
